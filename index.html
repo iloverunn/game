@@ -102,6 +102,7 @@
     <div class="stars">★ ★ ★</div>
     <p style="color:#aaa;font-size:.75rem;letter-spacing:3px;text-transform:uppercase">Felicitaciones</p>
     <div class="winner-name" id="win-name"></div>
+    <div id="win-email" style="color:#aaa;font-size:.85rem;margin:.1rem 0 .4rem;font-family:'DM Sans',sans-serif"></div>
     <div class="score-badge" id="win-score"></div>
     <p style="color:#aaa;font-size:.85rem;margin:.3rem 0">¡Superaste la UE BSAS RUN Trivia!</p>
     <div class="roni-box">
@@ -131,7 +132,7 @@
 
 <script>
 const QUESTIONS=[
-  {q:"¿Cuántos kilómetros mide la maratón olímpica oficial?",opts:["40 km","42,195 km","45 km","38 km"],a:1},
+  {q:"¿Qué tiempo hizo Borelli en UE BSAS RUN 2024?",opts:["54:17","55:19","58:19","56:14"],a:0},
   {q:"¿En qué ciudad europea se realizaron los primeros Juegos Olímpicos modernos?",opts:["Roma","París","Atenas","Londres"],a:2},
   {q:"¿Qué significa 'hitting the wall' en el maratón?",opts:["Lesión muscular grave","Agotamiento del glucógeno muscular","Deshidratación total","Síncope cardíaco"],a:1},
   {q:"¿Cuántos países integran actualmente la Unión Europea?",opts:["24","25","27","30"],a:2},
@@ -214,6 +215,7 @@ function endGame(reason){
   clearInterval(timer);savePlayed(email);
   if(correct>=WIN){
     document.getElementById('win-name').textContent=name;
+    document.getElementById('win-email').textContent=email;
     document.getElementById('win-score').textContent=`${correct} / ${TOTAL} CORRECTAS`;
     spawnConfetti();show('screen-win');
   } else {
