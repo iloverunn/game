@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>UE BSAS RUN | Trivia iLoveRunn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--gold:#D4A017;--blue:#003399;--white:#fff;--dark:#0a0a0a;--red:#cc0000;--navy:#0f1923;--card:#1e2d3d;--border:#2e4a63}
+  html,body{height:100%;background:var(--navy);overflow-x:hidden}
+  body{font-family:'DM Sans',sans-serif;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #app{width:100%;max-width:480px;min-height:100vh;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem}
+  .screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;text-align:center;padding:1rem 0}
+  .screen.active{display:flex}
+  .flag-stripe{position:fixed;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--blue) 33%,var(--white) 33%,var(--white) 66%,var(--red) 66%);z-index:99}
+  .logo{font-family:'Anton',sans-serif;font-size:2.2rem;letter-spacing:2px;color:var(--gold);line-height:1;margin-top:1.5rem}
+  .sub{font-size:.7rem;letter-spacing:4px;text-transform:uppercase;color:#aaa;margin-top:4px}
+  .title{font-family:'Anton',sans-serif;font-size:3rem;letter-spacing:1px;margin:1.2rem 0 .4rem;color:var(--gold);line-height:1}
+  .desc{color:#ccc;font-size:.9rem;line-height:1.6;max-width:320px;margin:0 auto 1.5rem}
+  .form-group{width:100%;margin:.5rem 0}
+  .form-group input{width:100%;background:var(--card);border:1.5px solid var(--border);color:#fff;padding:.9rem 1rem;border-radius:10px;font-size:1rem;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s}
+  .form-group input::placeholder{color:#6a8a9a}
+  .form-group input:focus{border-color:var(--gold)}
+  .btn{background:var(--gold);color:#0a0a0a;border:none;padding:.9rem 2rem;border-radius:10px;font-size:1.05rem;font-weight:700;font-family:'Anton',sans-serif;letter-spacing:1px;cursor:pointer;margin-top:.8rem;transition:opacity .2s,transform .1s;width:100%}
+  .btn:active{transform:scale(.97);opacity:.9}
+  .err{color:#ff6b6b;font-size:.82rem;margin-top:.5rem;min-height:1.2rem;text-align:left;width:100%}
+  /* GAME */
+  .q-header{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
+  .q-count{font-family:'Anton',sans-serif;font-size:.9rem;color:#aaa;letter-spacing:1px}
+  .timer-wrap{position:relative;width:56px;height:56px;flex-shrink:0}
+  .timer-wrap svg{transform:rotate(-90deg)}
+  .timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:1.3rem;color:var(--gold)}
+  .progress-bar{height:4px;background:var(--card);border-radius:2px;margin-bottom:1rem;overflow:hidden;width:100%}
+  .progress-fill{height:100%;background:var(--gold);transition:width .4s}
+  .question-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.2rem 1.3rem;margin-bottom:1rem;text-align:left;width:100%}
+  .question{font-family:'Anton',sans-serif;font-size:1.05rem;letter-spacing:.3px;line-height:1.45;color:#fff}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;width:100%}
+  .opt{background:var(--card);border:1.5px solid var(--border);color:#eee;padding:.8rem .8rem;border-radius:10px;font-size:.88rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;transition:all .15s;line-height:1.35;font-weight:500;touch-action:manipulation}
+  .opt:active:not(:disabled){background:#253a4e}
+  .opt.correct{border-color:#2ecc71!important;background:#0d2e1a!important;color:#2ecc71!important}
+  .opt.wrong{border-color:#e74c3c!important;background:#2e0d0d!important;color:#ff6b6b!important}
+  .opt.revealed{border-color:#2ecc71!important;background:#0d2e1a!important;color:#2ecc71!important}
+  .opt:disabled{cursor:not-allowed;opacity:.85}
+  /* RESULTS */
+  .result-title{font-family:'Anton',sans-serif;font-size:3.5rem;letter-spacing:2px;line-height:1}
+  .winner-name{color:var(--gold);font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:1px;margin:.4rem 0}
+  .score-badge{display:inline-block;background:var(--gold);color:#0a0a0a;font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:1px;padding:.4rem 1.4rem;border-radius:20px;margin:.7rem 0}
+  .roni-box{border:2px solid var(--gold);border-radius:14px;padding:1.2rem 1.5rem;margin-top:1.2rem;width:100%;background:#1a1200}
+  .roni-box p{font-size:.9rem;color:#ddd;line-height:1.6}
+  .roni-box strong{color:var(--gold);font-family:'Anton',sans-serif;font-size:1.05rem;letter-spacing:.5px}
+  .stars{color:var(--gold);font-size:1.4rem;letter-spacing:4px;margin:.4rem 0}
+  .timeout-txt{color:#ff6b6b;font-family:'Anton',sans-serif;font-size:1.4rem;letter-spacing:1px;margin:.4rem 0}
+  .btn-outline{background:transparent;border:1.5px solid var(--gold);color:var(--gold)}
+  @keyframes confetti-fall{to{transform:translateY(900px) rotate(720deg);opacity:0}}
+  .confetti-piece{position:fixed;width:9px;height:9px;opacity:.95;animation:confetti-fall linear forwards;pointer-events:none;z-index:50}
+  @keyframes pop-in{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+  .pop{animation:pop-in .25s ease-out}
+</style>
+</head>
+<body>
+<div class="flag-stripe"></div>
+<div id="app">
+
+  <!-- REGISTRO -->
+  <div class="screen active" id="screen-register">
+    <div class="logo">🇪🇺 UE BSAS RUN</div>
+    <div class="sub">× iLoveRunn Trivia</div>
+    <div class="title">TRIVIA<br>CHALLENGE</div>
+    <p class="desc">8 de 10 preguntas correctas en 30 segundos.<br>¿Podés con el cronómetro?</p>
+    <div class="form-group"><input id="inp-name" type="text" placeholder="Tu nombre" autocomplete="off" autocorrect="off" /></div>
+    <div class="form-group"><input id="inp-email" type="email" placeholder="Tu correo electrónico" autocomplete="off" autocorrect="off" autocapitalize="none" /></div>
+    <div class="err" id="reg-err"></div>
+    <button class="btn" id="btn-start">¡QUIERO JUGAR!</button>
+  </div>
+
+  <!-- JUEGO -->
+  <div class="screen" id="screen-game">
+    <div style="width:100%">
+      <div class="q-header">
+        <span class="q-count" id="q-count">PREGUNTA 1 / 10</span>
+        <div class="timer-wrap">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="24" fill="none" stroke="#1e2d3d" stroke-width="4"/>
+            <circle id="timer-ring" cx="28" cy="28" r="24" fill="none" stroke="#D4A017" stroke-width="4"
+              stroke-dasharray="150.8" stroke-dashoffset="0" stroke-linecap="round"/>
+          </svg>
+          <div class="timer-num" id="timer-num">30</div>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="question-card"><div class="question" id="question-text"></div></div>
+      <div class="options" id="options-grid"></div>
+    </div>
+  </div>
+
+  <!-- GANADOR -->
+  <div class="screen" id="screen-win">
+    <div style="font-size:3.5rem" class="pop">🏆</div>
+    <div class="result-title" style="color:var(--gold)">¡GANASTE!</div>
+    <div class="stars">★ ★ ★</div>
+    <p style="color:#aaa;font-size:.75rem;letter-spacing:3px;text-transform:uppercase">Felicitaciones</p>
+    <div class="winner-name" id="win-name"></div>
+    <div class="score-badge" id="win-score"></div>
+    <p style="color:#aaa;font-size:.85rem;margin:.3rem 0">¡Superaste la UE BSAS RUN Trivia!</p>
+    <div class="roni-box">
+      <strong>🎁 MOSTRÁ ESTA PANTALLA A RONI</strong>
+      <p style="margin-top:.5rem">para llevarte tu regalo</p>
+    </div>
+  </div>
+
+  <!-- PERDEDOR -->
+  <div class="screen" id="screen-lose">
+    <div style="font-size:3rem">😤</div>
+    <div class="result-title">¡CASI!</div>
+    <div class="timeout-txt" id="lose-reason"></div>
+    <div class="score-badge" id="lose-score"></div>
+    <p style="color:#ccc;font-size:.9rem;margin:.5rem 0 1.5rem;line-height:1.6">Necesitás 8 respuestas correctas<br>para ganar el premio.</p>
+    <button class="btn btn-outline" id="btn-retry">VOLVER AL INICIO</button>
+  </div>
+
+  <!-- YA JUGÓ -->
+  <div class="screen" id="screen-played">
+    <div style="font-size:3rem">🚫</div>
+    <div class="result-title">YA JUGASTE</div>
+    <p style="color:#ccc;font-size:.9rem;line-height:1.6;margin-top:1rem">Este correo ya participó en la trivia.<br>Solo se permite un intento por persona.</p>
+  </div>
+
+</div>
+
+<script>
+const QUESTIONS=[
+  {q:"¿Cuántos kilómetros mide la maratón olímpica oficial?",opts:["40 km","42,195 km","45 km","38 km"],a:1},
+  {q:"¿En qué ciudad europea se realizaron los primeros Juegos Olímpicos modernos?",opts:["Roma","París","Atenas","Londres"],a:2},
+  {q:"¿Qué significa 'hitting the wall' en el maratón?",opts:["Lesión muscular grave","Agotamiento del glucógeno muscular","Deshidratación total","Síncope cardíaco"],a:1},
+  {q:"¿Cuántos países integran actualmente la Unión Europea?",opts:["24","25","27","30"],a:2},
+  {q:"¿Cuál es el récord mundial masculino en los 100 metros planos?",opts:["9.58 seg","9.63 seg","9.72 seg","9.81 seg"],a:0},
+  {q:"¿Qué capital europea es famosa por su maratón 'entre dos continentes'?",opts:["Lisboa","Estambul","Viena","Berlín"],a:1},
+  {q:"¿Cómo se llama la fase donde se reduce el volumen de entrenamiento antes de competir?",opts:["Pico de forma","Tapering","Supercompensación","Deload"],a:1},
+  {q:"¿En qué país europeo se corre la famosa maratón de Comrades?",opts:["Grecia","Sudáfrica","Portugal","Kenya"],a:1},
+  {q:"¿Cuál es la zona de frecuencia cardíaca óptima para el entrenamiento aeróbico base?",opts:["Zona 1","Zona 2","Zona 4","Zona 5"],a:1},
+  {q:"¿Qué moneda usa la mayoría de los países de la Unión Europea?",opts:["Franco","Libra","Euro","Corona"],a:2},
+];
+
+const TOTAL=QUESTIONS.length, WIN=8, SECS=30, KEY='ue_bsas_trivia_v1';
+let name='',email='',qs=[],cur=0,correct=0,timer=null,secs=SECS,answered=false;
+
+function shuffle(a){return a.sort(()=>Math.random()-.5)}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function getPlayed(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
+function savePlayed(e){try{const p=getPlayed();if(!p.includes(e)){p.push(e);localStorage.setItem(KEY,JSON.stringify(p))}}catch{}}
+function hasPlayed(e){return getPlayed().includes(e.toLowerCase().trim())}
+
+document.getElementById('btn-start').addEventListener('click',()=>{
+  const n=document.getElementById('inp-name').value.trim();
+  const e=document.getElementById('inp-email').value.trim().toLowerCase();
+  const err=document.getElementById('reg-err');
+  if(!n){err.textContent='Ingresá tu nombre.';return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){err.textContent='Ingresá un correo válido.';return}
+  if(hasPlayed(e)){err.textContent='';show('screen-played');return}
+  err.textContent='';
+  name=n;email=e;
+  qs=shuffle([...QUESTIONS]);
+  cur=0;correct=0;secs=SECS;
+  show('screen-game');
+  renderQ();startTimer();
+});
+
+document.getElementById('btn-retry').addEventListener('click',()=>{
+  document.getElementById('inp-name').value='';
+  document.getElementById('inp-email').value='';
+  show('screen-register');
+});
+
+function renderQ(){
+  const q=qs[cur];answered=false;
+  document.getElementById('q-count').textContent=`PREGUNTA ${cur+1} / ${TOTAL}`;
+  document.getElementById('progress-fill').style.width=`${(cur/TOTAL)*100}%`;
+  document.getElementById('question-text').textContent=q.q;
+  const grid=document.getElementById('options-grid');grid.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';btn.textContent=opt;
+    btn.addEventListener('click',()=>pick(i));
+    grid.appendChild(btn);
+  });
+}
+
+function pick(idx){
+  if(answered)return;answered=true;
+  const q=qs[cur];
+  const btns=document.querySelectorAll('.opt');
+  btns.forEach(b=>b.disabled=true);
+  if(idx===q.a){btns[idx].classList.add('correct');correct++;}
+  else{btns[idx].classList.add('wrong');btns[q.a].classList.add('revealed');}
+  setTimeout(()=>{cur++;if(cur>=TOTAL)endGame('done');else renderQ();},700);
+}
+
+function startTimer(){
+  clearInterval(timer);secs=SECS;drawTimer();
+  timer=setInterval(()=>{secs--;drawTimer();if(secs<=0){clearInterval(timer);endGame('timeout');}},1000);
+}
+
+function drawTimer(){
+  document.getElementById('timer-num').textContent=secs;
+  document.getElementById('timer-ring').style.strokeDashoffset=150.8*(1-secs/SECS);
+  const c=secs<=10?'#cc0000':secs<=20?'#f39c12':'#D4A017';
+  document.getElementById('timer-ring').style.stroke=c;
+  document.getElementById('timer-num').style.color=c;
+}
+
+function endGame(reason){
+  clearInterval(timer);savePlayed(email);
+  if(correct>=WIN){
+    document.getElementById('win-name').textContent=name;
+    document.getElementById('win-score').textContent=`${correct} / ${TOTAL} CORRECTAS`;
+    spawnConfetti();show('screen-win');
+  } else {
+    document.getElementById('lose-reason').textContent=reason==='timeout'?'⏱ SE ACABÓ EL TIEMPO':'NO ALCANZASTE LAS 8';
+    document.getElementById('lose-score').textContent=`${correct} / ${TOTAL} CORRECTAS`;
+    show('screen-lose');
+  }
+}
+
+function spawnConfetti(){
+  const colors=['#D4A017','#003399','#cc0000','#fff','#f39c12','#2ecc71'];
+  for(let i=0;i<70;i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${colors[i%colors.length]};border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${1.8+Math.random()*2.2}s;animation-delay:${Math.random()*1.2}s`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),(4)*1000);
+  }
+}
+</script>
+</body>
+</html>
